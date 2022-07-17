@@ -1,0 +1,1 @@
+# wave-fucntion-collapse-py
