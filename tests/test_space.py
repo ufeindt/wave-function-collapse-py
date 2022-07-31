@@ -143,3 +143,54 @@ class SpaceUnitTests(TestCase):
         self.assertIsNone(space.possible_tiles)
         self.assertEqual(space.tile, self.tile1)
         random_uniform_mock.assert_not_called()
+
+    def test_set_tile(self):
+        space = Space((1, 2), possible_tiles=self.tiles)
+        space.set_tile(self.tiles[0])
+
+        self.assertEqual(space.tile, self.tiles[0])
+        self.assertIsNone(space.possible_tiles)
+        self.assertIsNone(space.frequencies)
+
+    def test_set_possible_tiles(self):
+        space = Space((1, 2), possible_tiles=self.tiles)
+        space.set_possible_tiles(self.tiles[:-1])
+
+        self.assertEqual(space.possible_tiles, self.tiles[:-1])
+
+    def test_set_possible_tiles_raise_exception_if_empty(self):
+        space = Space((1, 2), possible_tiles=self.tiles)
+
+        with self.assertRaises(WaveFunctionCollapseException) as context:
+            space.set_possible_tiles([])
+
+        self.assertEqual(
+            str(context.exception),
+            "No options remaining for this space. This should not happen. "
+            "Please check the rules.",
+        )
+
+    def test_set_frequencies(self):
+        space = Space((1, 2), possible_tiles=self.tiles)
+        space.set_frequencies([5, 10])
+
+        self.assertEqual(space.frequencies, [5, 10])
+
+    def test_set_frequencies_remove_if_zero(self):
+        space = Space((1, 2), possible_tiles=self.tiles)
+        space.set_frequencies([5, 0])
+
+        self.assertEqual(space.frequencies, [5])
+        self.assertEqual(space.possible_tiles, [self.tile1])
+
+    def test_set_frequencies_exception_if_all_zero(self):
+        space = Space((1, 2), possible_tiles=self.tiles)
+
+        with self.assertRaises(WaveFunctionCollapseException) as context:
+            space.set_frequencies([0, 0])
+
+        self.assertEqual(
+            str(context.exception),
+            "No options remaining for this space. This should not happen. "
+            "Please check the rules.",
+        )

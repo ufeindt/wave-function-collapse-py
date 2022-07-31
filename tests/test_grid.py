@@ -128,6 +128,7 @@ class GridUnitTests(TestCase):
         )
 
         grid.spaces[(0, 0)].possible_tiles.pop()
+        grid.spaces[(0, 0)].frequencies.pop()
         self.assertEqual(
             grid.lowest_entropy_spaces,
             [(0, 0)],
@@ -136,8 +137,7 @@ class GridUnitTests(TestCase):
     def test_lowest_entropy_spaces_all_assigned(self):
         grid = Grid(self.tiles, size=(2, 2))
         for space in grid.spaces.values():
-            space.tile = space.possible_tiles[0]
-            space.possible_tiles = None
+            space.set_tile(space.possible_tiles[0])
 
         self.assertEqual(
             grid.lowest_entropy_spaces,
@@ -308,8 +308,7 @@ class GridUnitTests(TestCase):
     ):
         grid = Grid(self.tiles, size=(2, 2))
         for space in grid.spaces.values():
-            space.tile = space.possible_tiles[0]
-            space.possible_tiles = None
+            space.set_tile(space.possible_tiles[0])
 
         with self.assertRaises(WaveFunctionCollapseException) as context:
             grid.assign_next_tile()

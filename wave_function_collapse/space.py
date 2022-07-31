@@ -13,6 +13,8 @@ class Space:
     Attributes:
         coords: The space's coordinates (x, y). (The x-axis points east,
             y-axis south.)
+        frequencies: List of floats of the same length as possible_tiles
+            representing the tile's frequencies.
         possible_tiles: List of possible tiles that could be assigned.
             Mutually exclusive with tile.
         tile: Tile assigned to the space. Mutually exclusive with tile.
@@ -39,12 +41,17 @@ class Space:
         self.possible_tiles = possible_tiles
         self.tile = tile
 
+        if possible_tiles:
+            self.frequencies = [tile.frequency for tile in possible_tiles]
+        else:
+            self.frequencies = None
+
     @property
     def entropy(self):
         """Shannon entropy."""
-        if self.possible_tiles:
+        if self.frequencies:
             return shannon_entropy(
-                *[tile.frequency for tile in self.possible_tiles]
+                *[frequency for frequency in self.frequencies]
             )
 
         return 0
@@ -59,6 +66,45 @@ class Space:
             RuleDirection.WEST: (self.coords[0] - 1, self.coords[1]),
         }
 
+    def set_tile(self, tile):
+        """Set the tile attribute and resets possible_tiles and
+        frequencies.
+        """
+        self.tile = tile
+        self.possible_tiles = None
+        self.frequencies = None
+
+    def set_possible_tiles(self, possible_tiles: List[Tile]):
+        """Sets the possible_tiles property.
+
+        Raises:
+            WaveFunctionCollapseException if no tiles remain as this
+            should not happen.
+        """
+        if not possible_tiles:
+            raise WaveFunctionCollapseException(
+                "No options remaining for this space. "
+                "This should not happen. "
+                "Please check the rules."
+            )
+
+        self.possible_tiles = possible_tiles
+
+    def set_frequencies(self, frequencies: List[float]):
+        if 0 in frequencies:
+            self.set_possible_tiles(
+                [
+                    tile
+                    for frequency, tile in zip(
+                        frequencies, self.possible_tiles
+                    )
+                    if frequency
+                ]
+            )
+            frequencies = [frequency for frequency in frequencies if frequency]
+
+        self.frequencies = frequencies
+
     def assign_tile(self):
         """Assigns a tile to the space based on the tiles' frequencies.
 
@@ -70,8 +116,7 @@ class Space:
                 "This space has already been assigned a tile."
             )
         elif len(self.possible_tiles) == 1:
-            self.tile = self.possible_tiles[0]
-            self.possible_tiles = None
+            self.set_tile(self.possible_tiles[0])
             return
 
         random_number = random.uniform(
@@ -82,6 +127,5 @@ class Space:
         for tile in self.possible_tiles:
             cumulative_frequency += tile.frequency
             if random_number < cumulative_frequency:
-                self.tile = tile
-                self.possible_tiles = None
+                self.set_tile(tile)
                 break

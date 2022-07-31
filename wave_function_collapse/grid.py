@@ -105,18 +105,16 @@ class Grid:
         space = self.spaces[coords]
         original_possible_tiles = copy(space.possible_tiles)
 
-        space.possible_tiles = [
-            tile
-            for tile in space.possible_tiles
-            if self.check_tile_possible(coords, tile)
-        ]
-
-        if not space.possible_tiles:
-            raise WaveFunctionCollapseException(
-                "No options remaining for this space. "
-                "This should not happen. "
-                "Please check the rules."
-            )
+        space.set_possible_tiles(
+            [
+                tile
+                for tile in space.possible_tiles
+                if self.check_tile_possible(coords, tile)
+            ]
+        )
+        space.set_frequencies(
+            [tile.frequency for tile in space.possible_tiles]
+        )
 
         if len(space.possible_tiles) == 1:
             space.assign_tile()
