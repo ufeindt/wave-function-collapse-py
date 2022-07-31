@@ -76,7 +76,7 @@ class Tile:
         return self.symbol
 
     def check_rules(self, tile: Tile, direction: RuleDirection) -> bool:
-        """Check if a tile is allowed to be place adjacent to this tile
+        """Check if a tile is allowed to be placed adjacent to this tile
         in the given direction.
 
         Argument:

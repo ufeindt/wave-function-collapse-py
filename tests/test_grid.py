@@ -110,6 +110,64 @@ class GridUnitTests(TestCase):
             [],
         )
 
+    def test_check_tile_possible(self):
+        grid = Grid(self.tiles, size=(2, 2))
+        grid.spaces[(0, 0)].tile = self.tile1
+        grid.spaces[(0, 0)].possible_tiles = None
+
+        grid.update_possible_tiles([(0, 1), (1, 0)])
+
+        self.assertTrue(grid.check_tile_possible((0, 1), self.tile1))
+        self.assertTrue(grid.check_tile_possible((0, 1), self.tile2))
+        self.assertFalse(grid.check_tile_possible((0, 1), self.tile3))
+        self.assertFalse(grid.check_tile_possible((0, 1), self.tile4))
+
+        self.assertTrue(grid.check_tile_possible((1, 0), self.tile1))
+        self.assertTrue(grid.check_tile_possible((1, 0), self.tile2))
+        self.assertFalse(grid.check_tile_possible((1, 0), self.tile3))
+        self.assertFalse(grid.check_tile_possible((1, 0), self.tile4))
+
+        self.assertTrue(grid.check_tile_possible((1, 1), self.tile1))
+        self.assertTrue(grid.check_tile_possible((1, 1), self.tile2))
+        self.assertTrue(grid.check_tile_possible((1, 1), self.tile3))
+        self.assertFalse(grid.check_tile_possible((1, 1), self.tile4))
+
+    def test_check_tile_possible_directional_rules(self):
+        # Do not allow hills east of mountains/mountains west of hills.
+        self.tiles[0].rules[RuleDirection.EAST] = (
+            {
+                "matching_type": RuleMatchingType.TAGS,
+                "matching_values": ("mountain",),
+            },
+        )
+        self.tiles[1].rules[RuleDirection.WEST] = (
+            {
+                "matching_type": RuleMatchingType.TAGS,
+                "matching_values": ("hill", "grassland"),
+            },
+        )
+
+        grid = Grid(self.tiles, size=(2, 2))
+        grid.spaces[(0, 0)].tile = self.tiles[0]
+        grid.spaces[(0, 0)].possible_tiles = None
+
+        grid.update_possible_tiles([(0, 1), (1, 0)])
+
+        self.assertTrue(grid.check_tile_possible((0, 1), self.tile1))
+        self.assertTrue(grid.check_tile_possible((0, 1), self.tile2))
+        self.assertFalse(grid.check_tile_possible((0, 1), self.tile3))
+        self.assertFalse(grid.check_tile_possible((0, 1), self.tile4))
+
+        self.assertTrue(grid.check_tile_possible((1, 0), self.tile1))
+        self.assertFalse(grid.check_tile_possible((1, 0), self.tile2))
+        self.assertFalse(grid.check_tile_possible((1, 0), self.tile3))
+        self.assertFalse(grid.check_tile_possible((1, 0), self.tile4))
+
+        self.assertTrue(grid.check_tile_possible((1, 1), self.tile1))
+        self.assertTrue(grid.check_tile_possible((1, 1), self.tile2))
+        self.assertFalse(grid.check_tile_possible((1, 1), self.tile3))
+        self.assertFalse(grid.check_tile_possible((1, 1), self.tile4))
+
     def test_update_possible_tiles_for_single_space(self):
         grid = Grid(self.tiles, size=(2, 2))
         grid.spaces[(0, 0)].tile = self.tile1

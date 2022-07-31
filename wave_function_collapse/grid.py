@@ -2,7 +2,6 @@ import random
 from copy import copy
 from typing import List, Tuple
 
-from wave_function_collapse.constants import ADJACENT_BORDERS
 from wave_function_collapse.exceptions import WaveFunctionCollapseException
 from wave_function_collapse.space import Space
 from wave_function_collapse.tile import Tile
@@ -59,6 +58,35 @@ class Grid:
             ]
         )
 
+    def check_tile_possible(self, coords: Tuple[int], tile: Tile) -> bool:
+        """Checks if a tile is allowed at the given coordinates.
+
+        Arguments:
+            coords: A space's coordinates.
+            tile: The tile to be checked.
+
+        Returns:
+            Boolean flag whether the tile is allowed.
+        """
+        space = self.spaces[coords]
+
+        for direction, neighbor_coords in space.neighbors.items():
+            if neighbor_coords not in self.spaces:
+                continue
+
+            neighbor = self.spaces[neighbor_coords]
+            if neighbor.tile:
+                tiles_to_check = [neighbor.tile]
+            else:
+                tiles_to_check = neighbor.possible_tiles
+
+            if not any(
+                tile.check_rules(t_, direction) for t_ in tiles_to_check
+            ):
+                return False
+
+        return True
+
     def update_possible_tiles_for_single_space(
         self, coords: Tuple[int]
     ) -> bool:
@@ -74,27 +102,13 @@ class Grid:
             WaveFunctionCollapseException if a tile is already assigned.
         """
         space = self.spaces[coords]
-        neighbors = {
-            ADJACENT_BORDERS[d_]: c_
-            for d_, c_ in space.neighbors.items()
-            if c_ in self.spaces
-        }
         original_possible_tiles = copy(space.possible_tiles)
 
-        for direction, neighbor_coord in neighbors.items():
-            neighbor = self.spaces[neighbor_coord]
-            if neighbor.tile:
-                tiles_to_check = [neighbor.tile]
-            else:
-                tiles_to_check = neighbor.possible_tiles
-
-            space.possible_tiles = [
-                t_
-                for t_ in space.possible_tiles
-                if any(
-                    tile.check_rules(t_, direction) for tile in tiles_to_check
-                )
-            ]
+        space.possible_tiles = [
+            tile
+            for tile in space.possible_tiles
+            if self.check_tile_possible(coords, tile)
+        ]
 
         if not space.possible_tiles:
             raise WaveFunctionCollapseException(
