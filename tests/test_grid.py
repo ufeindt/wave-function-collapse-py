@@ -151,20 +151,20 @@ class GridUnitTests(TestCase):
 
         grid.update_possible_tiles([(0, 1), (1, 0)])
 
-        self.assertTrue(grid.check_tile_possible((0, 1), self.tile1))
-        self.assertTrue(grid.check_tile_possible((0, 1), self.tile2))
-        self.assertFalse(grid.check_tile_possible((0, 1), self.tile3))
-        self.assertFalse(grid.check_tile_possible((0, 1), self.tile4))
+        self.assertEqual(grid.get_tile_frequency((0, 1), self.tile1), 3)
+        self.assertEqual(grid.get_tile_frequency((0, 1), self.tile2), 4)
+        self.assertEqual(grid.get_tile_frequency((0, 1), self.tile3), 0)
+        self.assertEqual(grid.get_tile_frequency((0, 1), self.tile4), 0)
 
-        self.assertTrue(grid.check_tile_possible((1, 0), self.tile1))
-        self.assertTrue(grid.check_tile_possible((1, 0), self.tile2))
-        self.assertFalse(grid.check_tile_possible((1, 0), self.tile3))
-        self.assertFalse(grid.check_tile_possible((1, 0), self.tile4))
+        self.assertEqual(grid.get_tile_frequency((1, 0), self.tile1), 3)
+        self.assertEqual(grid.get_tile_frequency((1, 0), self.tile2), 4)
+        self.assertEqual(grid.get_tile_frequency((1, 0), self.tile3), 0)
+        self.assertEqual(grid.get_tile_frequency((1, 0), self.tile4), 0)
 
-        self.assertTrue(grid.check_tile_possible((1, 1), self.tile1))
-        self.assertTrue(grid.check_tile_possible((1, 1), self.tile2))
-        self.assertTrue(grid.check_tile_possible((1, 1), self.tile3))
-        self.assertFalse(grid.check_tile_possible((1, 1), self.tile4))
+        self.assertEqual(grid.get_tile_frequency((1, 1), self.tile1), 4)
+        self.assertEqual(grid.get_tile_frequency((1, 1), self.tile2), 4)
+        self.assertEqual(grid.get_tile_frequency((1, 1), self.tile3), 2)
+        self.assertEqual(grid.get_tile_frequency((1, 1), self.tile4), 0)
 
     def test_check_tile_possible_directional_rules(self):
         # Do not allow hills east of mountains/mountains west of hills.
@@ -194,20 +194,20 @@ class GridUnitTests(TestCase):
 
         grid.update_possible_tiles([(0, 1), (1, 0)])
 
-        self.assertTrue(grid.check_tile_possible((0, 1), self.tile1))
-        self.assertTrue(grid.check_tile_possible((0, 1), self.tile2))
-        self.assertFalse(grid.check_tile_possible((0, 1), self.tile3))
-        self.assertFalse(grid.check_tile_possible((0, 1), self.tile4))
+        self.assertEqual(grid.get_tile_frequency((0, 1), self.tile1), 2)
+        self.assertEqual(grid.get_tile_frequency((0, 1), self.tile2), 3)
+        self.assertEqual(grid.get_tile_frequency((0, 1), self.tile3), 0)
+        self.assertEqual(grid.get_tile_frequency((0, 1), self.tile4), 0)
 
-        self.assertTrue(grid.check_tile_possible((1, 0), self.tile1))
-        self.assertFalse(grid.check_tile_possible((1, 0), self.tile2))
-        self.assertFalse(grid.check_tile_possible((1, 0), self.tile3))
-        self.assertFalse(grid.check_tile_possible((1, 0), self.tile4))
+        self.assertEqual(grid.get_tile_frequency((1, 0), self.tile1), 3)
+        self.assertEqual(grid.get_tile_frequency((1, 0), self.tile2), 0)
+        self.assertEqual(grid.get_tile_frequency((1, 0), self.tile3), 0)
+        self.assertEqual(grid.get_tile_frequency((1, 0), self.tile4), 0)
 
-        self.assertTrue(grid.check_tile_possible((1, 1), self.tile1))
-        self.assertTrue(grid.check_tile_possible((1, 1), self.tile2))
-        self.assertFalse(grid.check_tile_possible((1, 1), self.tile3))
-        self.assertFalse(grid.check_tile_possible((1, 1), self.tile4))
+        self.assertEqual(grid.get_tile_frequency((1, 1), self.tile1), 3)
+        self.assertEqual(grid.get_tile_frequency((1, 1), self.tile2), 2)
+        self.assertEqual(grid.get_tile_frequency((1, 1), self.tile3), 0)
+        self.assertEqual(grid.get_tile_frequency((1, 1), self.tile4), 0)
 
     def test_update_possible_tiles_for_single_space(self):
         grid = Grid(self.tiles, size=(2, 2))
@@ -275,13 +275,13 @@ class GridUnitTests(TestCase):
         self, random_randrange_mock, random_uniform_mock
     ):
         random_randrange_mock.return_value = 0
-        random_uniform_mock.return_value = 2.5
+        random_uniform_mock.return_value = 12.5
 
         grid = Grid(self.tiles, size=(2, 2))
         grid.assign_next_tile()
 
         random_randrange_mock.assert_called_once_with(4)
-        random_uniform_mock.assert_called_once_with(0, 4)
+        random_uniform_mock.assert_called_once_with(0, 20)
 
         self.assertEqual(grid.spaces[(0, 0)].tile.name, "Mountain")
         self.assertIsNone(grid.spaces[(0, 0)].possible_tiles)
@@ -326,7 +326,7 @@ class GridUnitTests(TestCase):
         self, random_randrange_mock, random_uniform_mock
     ):
         random_randrange_mock.return_value = 0
-        random_uniform_mock.return_value = 1.5
+        random_uniform_mock.return_value = 2.5
 
         self.tile1.rules[RuleDirection.ALL] = (
             {
@@ -347,7 +347,7 @@ class GridUnitTests(TestCase):
         grid.assign_next_tile()
 
         random_randrange_mock.assert_called_once_with(4)
-        random_uniform_mock.assert_called_once_with(0, 2)
+        random_uniform_mock.assert_called_once_with(0, 4)
 
         for x in range(2):
             for y in range(2):
@@ -364,7 +364,7 @@ class GridUnitTests(TestCase):
         self, random_randrange_mock, random_uniform_mock
     ):
         random_randrange_mock.return_value = 0
-        random_uniform_mock.side_effect = [2.5, 1.5, 1.5, 1.5]
+        random_uniform_mock.side_effect = [12.5, 4.5, 4.5, 3.5]
 
         grid = Grid(self.tiles, size=(2, 2))
         grid.assign_all_tiles()
@@ -375,10 +375,10 @@ class GridUnitTests(TestCase):
         )
         random_uniform_mock.assert_has_calls(
             [
+                mock.call(0, 20),
+                mock.call(0, 7),
+                mock.call(0, 6),
                 mock.call(0, 4),
-                mock.call(0, 2),
-                mock.call(0, 2),
-                mock.call(0, 2),
             ],
             any_order=False,
         )

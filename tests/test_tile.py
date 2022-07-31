@@ -10,13 +10,13 @@ class TileUnitTests(TestCase):
         tile = Tile(
             "Test Tile",
             color=colorama.Fore.CYAN,
-            frequency=10,
             rules={
                 RuleDirection.ALL: (
                     {
+                        "frequency": 1,
                         "matching_type": RuleMatchingType.TAGS,
-                        "matching_value": ("test",),
-                    }
+                        "matching_value": "test",
+                    },
                 )
             },
             symbol="A",
@@ -24,15 +24,15 @@ class TileUnitTests(TestCase):
         )
         self.assertEqual(tile.name, "Test Tile")
         self.assertEqual(tile.color, colorama.Fore.CYAN)
-        self.assertEqual(tile.frequency, 10)
         self.assertEqual(
             tile.rules,
             {
                 RuleDirection.ALL: (
                     {
+                        "frequency": 1,
                         "matching_type": RuleMatchingType.TAGS,
-                        "matching_value": ("test",),
-                    }
+                        "matching_value": "test",
+                    },
                 )
             },
         )
@@ -64,12 +64,6 @@ class TileUnitTests(TestCase):
     def test_str_no_color(self):
         tile = Tile("Test Tile", symbol="A")
         self.assertEqual(str(tile), "A")
-
-    def test_frequency_must_be_greater_than_zero(self):
-        with self.assertRaises(ValueError) as context:
-            Tile("Test Tile", frequency=0)
-
-        self.assertEqual(str(context.exception), "Frequency must be > 0.")
 
     def test_get_adjacency_frequency(self):
         tile1 = Tile(

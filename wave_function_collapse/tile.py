@@ -36,7 +36,6 @@ class Tile:
     Attributes:
         name: Tile name, used in rules for specific tiles.
         color: ANSI color string for terminal output (default: None).
-        frequency: Integer frequency of the tiles occurence (default: 1)
         rules: Dictionary of rules for adjacent tiles with directions as
             keys,  (default: None).
         symbol: String symbol representation for terminal output
@@ -49,7 +48,6 @@ class Tile:
         self,
         name: str,
         color: str = None,
-        frequency: float = 1,
         rules: Dict[RuleDirection, Tuple[TileRule]] = None,
         symbol: str = "█",
         tags: Tuple[str] = None,
@@ -61,12 +59,8 @@ class Tile:
         else:
             self.symbol = symbol
 
-        if frequency < 1:
-            raise ValueError("Frequency must be > 0.")
-
         self.name = name
         self.color = color
-        self.frequency = frequency
         self.rules = rules
         self.tags = tags
 

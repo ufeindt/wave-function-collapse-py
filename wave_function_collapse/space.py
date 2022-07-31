@@ -42,7 +42,7 @@ class Space:
         self.tile = tile
 
         if possible_tiles:
-            self.frequencies = [tile.frequency for tile in possible_tiles]
+            self.frequencies = [1 for tile in possible_tiles]
         else:
             self.frequencies = None
 
@@ -119,13 +119,11 @@ class Space:
             self.set_tile(self.possible_tiles[0])
             return
 
-        random_number = random.uniform(
-            0, sum(tile.frequency for tile in self.possible_tiles)
-        )
+        random_number = random.uniform(0, sum(self.frequencies))
 
         cumulative_frequency = 0
-        for tile in self.possible_tiles:
-            cumulative_frequency += tile.frequency
+        for tile, frequency in zip(self.possible_tiles, self.frequencies):
+            cumulative_frequency += frequency
             if random_number < cumulative_frequency:
                 self.set_tile(tile)
                 break

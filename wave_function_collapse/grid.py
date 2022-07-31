@@ -25,6 +25,8 @@ class Grid:
             for y in range(self.size[1])
         }
 
+        self.update_possible_tiles(list(self.spaces.keys()))
+
     def __str__(self):
         lines = []
         for y in range(self.size[1]):
@@ -58,18 +60,20 @@ class Grid:
             ]
         )
 
-    def check_tile_possible(self, coords: Tuple[int], tile: Tile) -> bool:
-        """Checks if a tile is allowed at the given coordinates.
+    def get_tile_frequency(self, coords: Tuple[int], tile: Tile) -> float:
+        """Determines the frequency of a tile occuring at the given
+        coordinates.
 
         Arguments:
             coords: A space's coordinates.
             tile: The tile to be checked.
 
         Returns:
-            Boolean flag whether the tile is allowed.
+            Float frequency of the tile.
         """
         space = self.spaces[coords]
 
+        frequency = 0
         for direction, neighbor_coords in space.neighbors.items():
             if neighbor_coords not in self.spaces:
                 continue
@@ -80,13 +84,18 @@ class Grid:
             else:
                 tiles_to_check = neighbor.possible_tiles
 
-            if not any(
+            frequency_from_neighbor = sum(
                 tile.get_adjacency_frequency(t_, direction)
                 for t_ in tiles_to_check
-            ):
-                return False
+            )
+            if frequency_from_neighbor:
+                frequency += frequency_from_neighbor
+            else:
+                # If any neighbor does not allow the tile, it should not
+                # be allowed, i.e. frequency = 0.
+                return 0
 
-        return True
+        return frequency
 
     def update_possible_tiles_for_single_space(
         self, coords: Tuple[int]
@@ -105,15 +114,11 @@ class Grid:
         space = self.spaces[coords]
         original_possible_tiles = copy(space.possible_tiles)
 
-        space.set_possible_tiles(
-            [
-                tile
-                for tile in space.possible_tiles
-                if self.check_tile_possible(coords, tile)
-            ]
-        )
         space.set_frequencies(
-            [tile.frequency for tile in space.possible_tiles]
+            [
+                self.get_tile_frequency(coords, tile)
+                for tile in space.possible_tiles
+            ]
         )
 
         if len(space.possible_tiles) == 1:

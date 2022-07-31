@@ -12,7 +12,6 @@ class SpaceUnitTests(TestCase):
         self.tile1 = Tile(
             "Test Tile 1",
             color=colorama.Fore.CYAN,
-            frequency=10,
             rules={
                 RuleDirection.ALL: (
                     {
@@ -27,7 +26,6 @@ class SpaceUnitTests(TestCase):
         self.tile2 = Tile(
             "Test Tile 2",
             color=colorama.Fore.RED,
-            frequency=5,
             rules={
                 RuleDirection.ALL: (
                     {
@@ -75,9 +73,7 @@ class SpaceUnitTests(TestCase):
         entropy_mock.return_value = 0.987654321
         space = Space((1, 2), possible_tiles=self.tiles)
         self.assertEqual(space.entropy, 0.987654321)
-        entropy_mock.assert_called_once_with(
-            self.tile1.frequency, self.tile2.frequency
-        )
+        entropy_mock.assert_called_once_with(1, 1)
 
     @mock.patch("wave_function_collapse.space.shannon_entropy")
     def test_entropy_zero_if_assigned_tile(self, entropy_mock):
@@ -100,25 +96,25 @@ class SpaceUnitTests(TestCase):
 
     @mock.patch("wave_function_collapse.space.random.uniform")
     def test_assign_first_tile(self, random_uniform_mock):
-        random_uniform_mock.return_value = 8
+        random_uniform_mock.return_value = 0.5
 
         space = Space((1, 2), possible_tiles=self.tiles)
         space.assign_tile()
 
         self.assertIsNone(space.possible_tiles)
         self.assertEqual(space.tile, self.tile1)
-        random_uniform_mock.assert_called_once_with(0, 15)
+        random_uniform_mock.assert_called_once_with(0, 2)
 
     @mock.patch("wave_function_collapse.space.random.uniform")
     def test_assign_second_tile(self, random_uniform_mock):
-        random_uniform_mock.return_value = 12
+        random_uniform_mock.return_value = 1.5
 
         space = Space((1, 2), possible_tiles=self.tiles)
         space.assign_tile()
 
         self.assertIsNone(space.possible_tiles)
         self.assertEqual(space.tile, self.tile2)
-        random_uniform_mock.assert_called_once_with(0, 15)
+        random_uniform_mock.assert_called_once_with(0, 2)
 
     @mock.patch("wave_function_collapse.space.random.uniform")
     def test_assign_tile_raise_if_already_collapsed(self, random_uniform_mock):
