@@ -14,8 +14,14 @@ class GridUnitTests(TestCase):
             rules={
                 RuleDirection.ALL: (
                     {
+                        "frequency": 1,
                         "matching_type": RuleMatchingType.TAGS,
-                        "matching_values": ("mountain", "hill"),
+                        "matching_value": "mountain",
+                    },
+                    {
+                        "frequency": 1,
+                        "matching_type": RuleMatchingType.TAGS,
+                        "matching_value": "hill",
                     },
                 )
             },
@@ -28,8 +34,19 @@ class GridUnitTests(TestCase):
             rules={
                 RuleDirection.ALL: (
                     {
+                        "frequency": 1,
                         "matching_type": RuleMatchingType.TAGS,
-                        "matching_values": ("mountain", "hill", "grassland"),
+                        "matching_value": "mountain",
+                    },
+                    {
+                        "frequency": 1,
+                        "matching_type": RuleMatchingType.TAGS,
+                        "matching_value": "hill",
+                    },
+                    {
+                        "frequency": 1,
+                        "matching_type": RuleMatchingType.TAGS,
+                        "matching_value": "grassland",
                     },
                 )
             },
@@ -42,8 +59,19 @@ class GridUnitTests(TestCase):
             rules={
                 RuleDirection.ALL: (
                     {
+                        "frequency": 1,
                         "matching_type": RuleMatchingType.TAGS,
-                        "matching_values": ("hill", "grassland", "sea"),
+                        "matching_value": "hill",
+                    },
+                    {
+                        "frequency": 1,
+                        "matching_type": RuleMatchingType.TAGS,
+                        "matching_value": "grassland",
+                    },
+                    {
+                        "frequency": 1,
+                        "matching_type": RuleMatchingType.TAGS,
+                        "matching_value": "sea",
                     },
                 )
             },
@@ -56,8 +84,14 @@ class GridUnitTests(TestCase):
             rules={
                 RuleDirection.ALL: (
                     {
+                        "frequency": 1,
                         "matching_type": RuleMatchingType.TAGS,
-                        "matching_values": ("grassland", "sea"),
+                        "matching_value": "grassland",
+                    },
+                    {
+                        "frequency": 1,
+                        "matching_type": RuleMatchingType.TAGS,
+                        "matching_value": "sea",
                     },
                 )
             },
@@ -136,14 +170,21 @@ class GridUnitTests(TestCase):
         # Do not allow hills east of mountains/mountains west of hills.
         self.tiles[0].rules[RuleDirection.EAST] = (
             {
+                "frequency": 1,
                 "matching_type": RuleMatchingType.TAGS,
-                "matching_values": ("mountain",),
+                "matching_value": "mountain",
             },
         )
         self.tiles[1].rules[RuleDirection.WEST] = (
             {
+                "frequency": 1,
                 "matching_type": RuleMatchingType.TAGS,
-                "matching_values": ("hill", "grassland"),
+                "matching_value": "hill",
+            },
+            {
+                "frequency": 1,
+                "matching_type": RuleMatchingType.TAGS,
+                "matching_value": "grassland",
             },
         )
 
@@ -288,10 +329,20 @@ class GridUnitTests(TestCase):
         random_randrange_mock.return_value = 0
         random_uniform_mock.return_value = 1.5
 
-        self.tile1.rules[RuleDirection.ALL][0]["matching_values"] = (
-            "mountain",
+        self.tile1.rules[RuleDirection.ALL] = (
+            {
+                "frequency": 1,
+                "matching_type": RuleMatchingType.TAGS,
+                "matching_value": "mountain",
+            },
         )
-        self.tile2.rules[RuleDirection.ALL][0]["matching_values"] = ("hill",)
+        self.tile2.rules[RuleDirection.ALL] = (
+            {
+                "frequency": 1,
+                "matching_type": RuleMatchingType.TAGS,
+                "matching_value": "hill",
+            },
+        )
 
         grid = Grid([self.tile1, self.tile2], size=(2, 2))
         grid.assign_next_tile()

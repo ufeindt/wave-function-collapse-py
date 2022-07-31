@@ -81,7 +81,8 @@ class Grid:
                 tiles_to_check = neighbor.possible_tiles
 
             if not any(
-                tile.check_rules(t_, direction) for t_ in tiles_to_check
+                tile.get_adjacency_frequency(t_, direction)
+                for t_ in tiles_to_check
             ):
                 return False
 

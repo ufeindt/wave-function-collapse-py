@@ -71,14 +71,15 @@ class TileUnitTests(TestCase):
 
         self.assertEqual(str(context.exception), "Frequency must be > 0.")
 
-    def test_check_rules(self):
+    def test_get_adjacency_frequency(self):
         tile1 = Tile(
             "Test Tile 1",
             rules={
                 RuleDirection.ALL: (
                     {
+                        "frequency": 1,
                         "matching_type": RuleMatchingType.TAGS,
-                        "matching_values": ("test",),
+                        "matching_value": "test",
                     },
                 ),
             },
@@ -90,7 +91,9 @@ class TileUnitTests(TestCase):
             tags=("test",),
         )
 
-        self.assertTrue(tile1.check_rules(tile2, RuleDirection.NORTH))
+        self.assertEqual(
+            tile1.get_adjacency_frequency(tile2, RuleDirection.NORTH), 1
+        )
 
     def test_check_rules_wrong_direction(self):
         tile1 = Tile(
@@ -98,14 +101,16 @@ class TileUnitTests(TestCase):
             rules={
                 RuleDirection.WEST: (
                     {
+                        "frequency": 1,
                         "matching_type": RuleMatchingType.TAGS,
-                        "matching_values": ("test",),
+                        "matching_value": "test",
                     },
                 ),
                 RuleDirection.ALL: (
                     {
+                        "frequency": 1,
                         "matching_type": RuleMatchingType.TAGS,
-                        "matching_values": ("test-2",),
+                        "matching_value": "test-2",
                     },
                 ),
             },
@@ -117,7 +122,9 @@ class TileUnitTests(TestCase):
             tags=("test",),
         )
 
-        self.assertFalse(tile1.check_rules(tile2, RuleDirection.NORTH))
+        self.assertEqual(
+            tile1.get_adjacency_frequency(tile2, RuleDirection.NORTH), 0
+        )
 
     def test_check_rules_wrong_tag(self):
         tile1 = Tile(
@@ -125,8 +132,9 @@ class TileUnitTests(TestCase):
             rules={
                 RuleDirection.ALL: (
                     {
+                        "frequency": 1,
                         "matching_type": RuleMatchingType.TAGS,
-                        "matching_values": ("test-2",),
+                        "matching_value": "test-2",
                     },
                 )
             },
@@ -138,7 +146,9 @@ class TileUnitTests(TestCase):
             tags=("test",),
         )
 
-        self.assertFalse(tile1.check_rules(tile2, RuleDirection.NORTH))
+        self.assertEqual(
+            tile1.get_adjacency_frequency(tile2, RuleDirection.NORTH), 0
+        )
 
     def test_check_rules_false_if_no_rules(self):
         tile1 = Tile(
@@ -146,8 +156,9 @@ class TileUnitTests(TestCase):
             rules={
                 RuleDirection.WEST: (
                     {
+                        "frequency": 1,
                         "matching_type": RuleMatchingType.TAGS,
-                        "matching_values": ("test-2",),
+                        "matching_values": "test-2",
                     },
                 )
             },
@@ -159,4 +170,6 @@ class TileUnitTests(TestCase):
             tags=("test",),
         )
 
-        self.assertFalse(tile1.check_rules(tile2, RuleDirection.NORTH))
+        self.assertEqual(
+            tile1.get_adjacency_frequency(tile2, RuleDirection.NORTH), 0
+        )

@@ -25,8 +25,9 @@ class RuleMatchingType(str, Enum):
 
 
 class TileRule(TypedDict):
+    frequency: float
     matching_type: RuleMatchingType
-    matching_values: Tuple[str]
+    matching_value: str
 
 
 class Tile:
@@ -75,26 +76,27 @@ class Tile:
 
         return self.symbol
 
-    def check_rules(self, tile: Tile, direction: RuleDirection) -> bool:
-        """Check if a tile is allowed to be placed adjacent to this tile
-        in the given direction.
+    def get_adjacency_frequency(
+        self, tile: Tile, direction: RuleDirection
+    ) -> float:
+        """Get the frewuency of a certain tile occuring adjacent to this
+        tile in the given direction.
 
         Argument:
             tile: Another tile.
             direction: The direction, in which that tile may be placed.
 
         Returns:
-            Boolean flag whether the tile can be placed.
+            Frequency of this tile occuring.
         """
         if not (rules := self.rules.get(direction)):
             if not (rules := self.rules.get(RuleDirection.ALL)):
                 return False
 
+        frequency = 0
         for rule in rules:
             if rule["matching_type"] == RuleMatchingType.TAGS:
-                if not any(
-                    tag in tile.tags for tag in rule["matching_values"]
-                ):
-                    return False
+                if rule["matching_value"] in tile.tags:
+                    frequency += rule["frequency"]
 
-        return True
+        return max(0, frequency)
