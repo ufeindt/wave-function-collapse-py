@@ -110,6 +110,66 @@ class GridUnitTests(TestCase):
             [],
         )
 
+    def test_update_possible_tiles_for_single_space(self):
+        grid = Grid(self.tiles, size=(2, 2))
+        grid.spaces[(0, 0)].tile = self.tile1
+        grid.spaces[(0, 0)].possible_tiles = None
+
+        grid.update_possible_tiles_for_single_space((0, 1))
+
+        self.assertEqual(
+            [tile.name for tile in grid.spaces[(0, 1)].possible_tiles],
+            ["Hill", "Mountain"],
+        )
+        self.assertEqual(
+            [tile.name for tile in grid.spaces[(1, 0)].possible_tiles],
+            ["Grassland", "Hill", "Mountain", "Sea"],
+        )
+        self.assertEqual(
+            [tile.name for tile in grid.spaces[(1, 1)].possible_tiles],
+            ["Grassland", "Hill", "Mountain", "Sea"],
+        )
+
+    def test_update_possible_tiles(self):
+        grid = Grid(self.tiles, size=(2, 2))
+        grid.spaces[(0, 0)].tile = self.tile1
+        grid.spaces[(0, 0)].possible_tiles = None
+
+        grid.update_possible_tiles([(0, 1), (1, 0)])
+
+        self.assertEqual(
+            [tile.name for tile in grid.spaces[(0, 1)].possible_tiles],
+            ["Hill", "Mountain"],
+        )
+        self.assertEqual(
+            [tile.name for tile in grid.spaces[(1, 0)].possible_tiles],
+            ["Hill", "Mountain"],
+        )
+        self.assertEqual(
+            [tile.name for tile in grid.spaces[(1, 1)].possible_tiles],
+            ["Grassland", "Hill", "Mountain"],
+        )
+
+    def test_update_possible_tiles_do_not_check_further(self):
+        grid = Grid(self.tiles, size=(2, 2))
+        grid.spaces[(0, 0)].tile = self.tile1
+        grid.spaces[(0, 0)].possible_tiles = None
+
+        grid.update_possible_tiles([(0, 1), (1, 0)], check_further=False)
+
+        self.assertEqual(
+            [tile.name for tile in grid.spaces[(0, 1)].possible_tiles],
+            ["Hill", "Mountain"],
+        )
+        self.assertEqual(
+            [tile.name for tile in grid.spaces[(1, 0)].possible_tiles],
+            ["Hill", "Mountain"],
+        )
+        self.assertEqual(
+            [tile.name for tile in grid.spaces[(1, 1)].possible_tiles],
+            ["Grassland", "Hill", "Mountain", "Sea"],
+        )
+
     @mock.patch("wave_function_collapse.space.random.uniform")
     @mock.patch("wave_function_collapse.grid.random.randrange")
     def test_assign_next_tile(

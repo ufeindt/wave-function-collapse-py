@@ -59,75 +59,114 @@ class Grid:
             ]
         )
 
+    def update_possible_tiles_for_single_space(
+        self, coords: Tuple[int]
+    ) -> bool:
+        """Updates the possible tiles for a space.
+
+        Arguments:
+            coords: The space's coordinates.
+
+        Returns:
+            Boolean flag whether any fields were updated.
+
+        Raises:
+            WaveFunctionCollapseException if a tile is already assigned.
+        """
+        space = self.spaces[coords]
+        neighbors = {
+            ADJACENT_BORDERS[d_]: c_
+            for d_, c_ in space.neighbors.items()
+            if c_ in self.spaces
+        }
+        original_possible_tiles = copy(space.possible_tiles)
+
+        for direction, neighbor_coord in neighbors.items():
+            neighbor = self.spaces[neighbor_coord]
+            if neighbor.tile:
+                tiles_to_check = [neighbor.tile]
+            else:
+                tiles_to_check = neighbor.possible_tiles
+
+            space.possible_tiles = [
+                t_
+                for t_ in space.possible_tiles
+                if any(
+                    tile.check_rules(t_, direction) for tile in tiles_to_check
+                )
+            ]
+
+        if not space.possible_tiles:
+            raise WaveFunctionCollapseException(
+                "No options remaining for this space. "
+                "This should not happen. "
+                "Please check the rules."
+            )
+
+        if len(space.possible_tiles) == 1:
+            space.assign_tile()
+
+        return space.possible_tiles != original_possible_tiles
+
+    def update_possible_tiles(
+        self,
+        coords_to_check: List[Tuple[int]],
+        check_further: bool = True,
+        shuffle_list: bool = True,
+    ):
+        """Updates the possible tiles for a list of spaces.
+
+        Arguments:
+            coords_to_check: List of space coordinates to check.
+            check_further: Flag whether the neighbors of checked spaces
+                that changed should also be checked (default: True).
+            shuffle_list: Flag whether to shuffle the list of
+                coordinates (default: True).
+
+        Raises:
+            WaveFunctionCollapseException if a tile is already assigned.
+        """
+        coords_checked = []
+        if shuffle_list:
+            random.shuffle(coords_to_check)
+
+        while coords_to_check:
+            coords = coords_to_check.pop(0)
+            updated = self.update_possible_tiles_for_single_space(coords)
+
+            if updated and check_further:
+                new_coords_to_check = [
+                    c_
+                    for c_ in self.spaces[coords].neighbors.values()
+                    if c_ in self.spaces
+                    and c_ not in coords_to_check
+                    and c_ not in coords_checked
+                    and self.spaces[c_].possible_tiles
+                ]
+                if shuffle_list:
+                    random.shuffle(new_coords_to_check)
+                coords_to_check.extend(new_coords_to_check)
+
     def assign_next_tile(self):
         """Assgins a tile to the next space.
 
         Raises:
             WaveFunctionCollapseException if not spaces left.
         """
-        if not (coords := self.lowest_entropy_spaces):
+        if not (low_entropy_spaces := self.lowest_entropy_spaces):
             raise WaveFunctionCollapseException(
                 "All spaces have been assigned a tile."
             )
 
-        coord = coords[random.randrange(len(coords))]
-        self.spaces[coord].assign_tile()
+        coords = low_entropy_spaces[random.randrange(len(low_entropy_spaces))]
+        self.spaces[coords].assign_tile()
 
-        coords_checked = []
         coords_to_check = [
             coord
-            for coord in self.spaces[coord].neighbors.values()
+            for coord in self.spaces[coords].neighbors.values()
             if coord in self.spaces and self.spaces[coord].possible_tiles
         ]
-        random.shuffle(coords_to_check)
-
-        while coords_to_check:
-            coord = coords_to_check.pop(0)
-            space = self.spaces[coord]
-            neighbors = {
-                ADJACENT_BORDERS[d_]: c_
-                for d_, c_ in space.neighbors.items()
-                if c_ in self.spaces
-            }
-            original_possible_tiles = copy(space.possible_tiles)
-
-            for direction, neighbor_coord in neighbors.items():
-                neighbor = self.spaces[neighbor_coord]
-                if neighbor.tile:
-                    tiles_to_check = [neighbor.tile]
-                else:
-                    tiles_to_check = neighbor.possible_tiles
-
-                space.possible_tiles = [
-                    t_
-                    for t_ in space.possible_tiles
-                    if any(
-                        tile.check_rules(t_, direction)
-                        for tile in tiles_to_check
-                    )
-                ]
-
-            if not space.possible_tiles:
-                raise WaveFunctionCollapseException(
-                    "No options remaining for this space. "
-                    "This should not happen. "
-                    "Please check the rules."
-                )
-
-            if len(space.possible_tiles) == 1:
-                space.assign_tile()
-
-            if space.possible_tiles != original_possible_tiles:
-                new_coords_to_check = [
-                    c_
-                    for c_ in space.neighbors.values()
-                    if c_ in self.spaces
-                    and c_ not in coords_to_check
-                    and c_ not in coords_checked
-                    and self.spaces[c_].possible_tiles
-                ]
-                random.shuffle(new_coords_to_check)
-                coords_to_check.extend(new_coords_to_check)
+        self.update_possible_tiles(coords_to_check)
 
     def assign_all_tiles(self):
         """Assigns tiles to spaces until there are none left."""
